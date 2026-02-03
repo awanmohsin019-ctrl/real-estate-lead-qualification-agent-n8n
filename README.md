@@ -4,7 +4,7 @@ This repository contains an AI-assisted email automation workflow designed for r
 
 The workflow reads incoming inquiry emails, analyzes intent using AI, classifies the lead, and responds appropriately while preserving full control over communication flow.
 
-The focus of this project is practical automation — designed to reflect how real estate agencies and consultants manage inbound leads in real operational environments.
+The focus of this project is practical automation, designed to reflect how real estate agencies and consultants manage inbound leads in real operational environments.
 
 Problem Context
 
