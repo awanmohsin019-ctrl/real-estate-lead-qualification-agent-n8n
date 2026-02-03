@@ -1,0 +1,415 @@
+{
+  "name": "Real Estate Lead Qualification Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        -96
+      ],
+      "id": "f6715aa3-64ca-4bde-9d82-dba6789207d1",
+      "name": "Real Estate Lead",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fDxa6vhPaBrNeCbX",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1c-brHJFw5y0PWoznS1WIhwgE2PUnHSugAzZ62yu-BIM",
+          "mode": "list",
+          "cachedResultName": "Lead Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c-brHJFw5y0PWoznS1WIhwgE2PUnHSugAzZ62yu-BIM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c-brHJFw5y0PWoznS1WIhwgE2PUnHSugAzZ62yu-BIM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ new Date(Number($json.internalDate)).toISOString() }}",
+            "Sender Name": "={{ $json.From.split('<')[0].trim() }}",
+            "Sender Email": "={{ $json.From.match(/<([^>]+)>/)?.[1] }}",
+            "Subject": "={{ $json.Subject }}",
+            "Message": "={{ $json.snippet }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender Name",
+              "displayName": "Sender Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Type",
+              "displayName": "Lead Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        48
+      ],
+      "id": "5ea9bb1b-98db-4510-92a3-051c7955715c",
+      "name": "Lead Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4vCU89pQ22AqQjf7",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a real estate lead qualification assistant.\nRespond concisely and professionally.\n"
+            },
+            {
+              "content": "=Analyze the following real estate inquiry.\n\nClassify the lead and return ONLY valid JSON\nwith these exact fields:\n\n{\n  \"lead_type\": \"Buy | Rent | Sell | General\",\n  \"urgency\": \"Hot | Warm | Cold\",\n  \"reply\": \"professional reply text\"\n}\n\nInquiry message:\n{{ $json.message }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        96
+      ],
+      "id": "492c03d9-c08b-4f33-b454-3ffe0eb86f3d",
+      "name": "Lead Qualification Brain",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "T5Y7DJALyfhs7GvL",
+          "name": "Google Gemini(PaLM) Api account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "84e10d51-928e-4bcc-ad38-2e6184b87d97",
+              "leftValue": "={{ $json.lead_type }}",
+              "rightValue": "=\"Buy\",",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        96
+      ],
+      "id": "1ca8edf0-a979-4b3f-b3a7-80211d311e94",
+      "name": "Routing Logic"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.sender_email }}",
+        "subject": "=Re: {{ $json.subject }}",
+        "message": "={{ $json.reply }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1184,
+        -32
+      ],
+      "id": "dad00d7f-4589-491a-9e0a-2bfb05de3d55",
+      "name": "HOT LEAD",
+      "webhookId": "fa45634a-23ae-4683-8bef-84d1ca6d179a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fDxa6vhPaBrNeCbX",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8b8fee0-b772-4e6b-98cf-14f067ca8bc1",
+              "name": "=lead_type",
+              "value": "={{ $json.content.parts[0].text.match(/\"lead_type\":\\s*(.*)/i)[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "4b42f8c1-0dce-4818-b1bb-b72199ba78ca",
+              "name": "urgency",
+              "value": "={{ $json.content.parts[0].text.match(/\"urgency\":\\s*(.*)/i)[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "5767d4ea-4884-4bea-9dc3-4e3b1fe0bd0c",
+              "name": "sender_email",
+              "value": "={{ $node[\"Clean Email Data\"].json.sender_email }}\n",
+              "type": "string"
+            },
+            {
+              "id": "91a95129-3913-4a2e-827b-c1391dea3f02",
+              "name": "subject",
+              "value": "={{ $node[\"Clean Email Data\"].json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "2ed7c266-3332-4152-9f4c-807caf6df003",
+              "name": "=message",
+              "value": "={{ $node[\"Clean Email Data\"].json.message}}",
+              "type": "string"
+            },
+            {
+              "id": "4c251bd8-0ce9-41de-a806-ab26388ad449",
+              "name": "reply",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        -176
+      ],
+      "id": "ef305335-f2ff-4fa7-9eb1-b58f46d617a6",
+      "name": "Build Lead Payload"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5321eb94-8ab0-4934-8630-e46ee5e5d338",
+              "name": "sender_email",
+              "value": "={{ $json[\"Sender Email\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5f4f1885-9738-40d7-a376-349807737b53",
+              "name": "sender_name",
+              "value": "={{ $json[\"Sender Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0af68b24-d185-4c06-b6e9-f32bfca78d2f",
+              "name": "subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "1f527321-c41c-4bef-b06f-b32363cb252d",
+              "name": "message",
+              "value": "={{ $json[\"Message\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        -96
+      ],
+      "id": "e389c649-2a0d-4566-b683-409d2559732d",
+      "name": "Clean Email Data"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Real Estate Lead": {
+      "main": [
+        [
+          {
+            "node": "Lead Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Log": {
+      "main": [
+        [
+          {
+            "node": "Clean Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Qualification Brain": {
+      "main": [
+        [
+          {
+            "node": "Build Lead Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Routing Logic": {
+      "main": [
+        [
+          {
+            "node": "HOT LEAD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Build Lead Payload": {
+      "main": [
+        [
+          {
+            "node": "Routing Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Email Data": {
+      "main": [
+        [
+          {
+            "node": "Lead Qualification Brain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7d8600a5-0555-4fff-b85e-5c2ec98516eb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2770290754f0310989c17fc8f84e5f2ae32982842da168d913db600669208db7"
+  },
+  "id": "RUbFXBdIqABGpa92",
+  "tags": []
+}
